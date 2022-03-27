@@ -4,10 +4,9 @@ import "./AggregatorV3Interface.sol";
 import "./Token.sol";
 
 contract MidasTokenGenerator {
-  uint256 public creationTokenPrice = 50000000000000000000; // 50$
+  uint256 public creationPrice = 50000000000000000000; // 50$
   address private aggregatorAddress;
   mapping (string => bool) private avaiblableNetworks;
-  mapping(string => bool) public availableFunctions;
   mapping(address => bool) public _managers;
 
   IUniswapV2Router02 public immutable pcsV2Router;
@@ -45,12 +44,12 @@ contract MidasTokenGenerator {
   receive() external payable {}
 
   modifier onlyOwner() {
-      require(owner == msg.sender, "Ownable: caller is not the owner");
+      require(owner == msg.sender, "onlyOwner");
       _;
   }
 
   modifier onlyManager() {
-    require(_managers[msg.sender] == true, "Only managers can call this function");
+    require(_managers[msg.sender] == true, "onlyManager");
     _;
   }
 
@@ -58,29 +57,19 @@ contract MidasTokenGenerator {
       _managers[manager] = newVal;
   }
 
-  function setFunctionAvailable(string memory functionName, bool value) public onlyOwner() {
-      require(keccak256(abi.encodePacked(functionName)) != keccak256(abi.encodePacked("setFunctionAvailable")), "Cant disabled this function to prevent heart attacks!");
-      require(availableFunctions[functionName] == value, "This value has already been set");
-      availableFunctions[functionName] = value;
-  }
-
   function enableDisableNetwork(string memory name, bool status) public onlyOwner {
       avaiblableNetworks[name] = status;
   }
 
-  
   function updateCreationPrice(uint256 amount) public onlyOwner {
-    require(!availableFunctions["updateCreationPrice"], "Function disabled");
-    creationTokenPrice = uint((amount**uint(decimalsDataFeed())) / uint(getLatestPrice())*1e18);
+    creationPrice = uint((amount**uint(priceFeed.decimals())) / uint(getLatestPrice())*1e18);
   }
 
   function updateCreationPriceV2(uint256 amount) public onlyOwner {
-    require(!availableFunctions["updateCreationPriceV2"], "Function disabled");
-    creationTokenPrice = amount;
+    creationPrice = amount;
   }
   
   function updatePriceDataFeed(address newValue) public onlyOwner {
-    require(!availableFunctions["updatePriceDataFeed"], "Function disabled");
     priceFeed = AggregatorV3Interface(address(newValue));
   }
 
@@ -108,13 +97,13 @@ contract MidasTokenGenerator {
         ///uint256 requiredTokenAmount = getEstimatedTokensForETH(paymentTokenAddress, creationTokenPrice);
 
         // get required token amount for pay service
-        uint256 requiredTokenAmount =  getMinimunTokenAmoutForServicePayment(paymentTokenAddress);
+        uint256 requiredTokenAmount =  getMinimunTokenAmout(paymentTokenAddress);
 
         // transfer from customer to contract
         require(IERC20(address(paymentTokenAddress)).transferFrom(msg.sender, address(this), requiredTokenAmount));
 
         // swap to native cryprocurrency | BNB, AVAX, MATIC, ETH ....
-        swapTokensForNativeCryprocurrency(paymentTokenAddress, requiredTokenAmount);
+        swap(paymentTokenAddress, requiredTokenAmount);
         transferedAmount = address(this).balance;
       } else {
         require(msg.value >= getRequiredEthAmount(), "low value");
@@ -133,10 +122,10 @@ contract MidasTokenGenerator {
   }
 
   function getRequiredEthAmount() public view returns (uint256) {
-      return creationTokenPrice / uint256(getLatestPrice());
+      return creationPrice / uint256(getLatestPrice())*1e8;
   }
 
-  function getMinimunTokenAmoutForServicePayment(address tokenAddress) public view returns (uint256) {
+  function getMinimunTokenAmout(address tokenAddress) public view returns (uint256) {
     // creationTokenPrice = X
     // ethPrice = Y
     // requiredEthAmount = X / Y
@@ -145,15 +134,15 @@ contract MidasTokenGenerator {
   }
 
   // return amount of tokenA needed to buy 1 tokenB
-  function estimatedTokensForTokens(address tokenAddressA, address tokenAddressB, uint amount) public view returns (uint256) {
-      return pcsV2Router.getAmountsOut(amount, getPathForTokensToTokens(tokenAddressA, tokenAddressB))[1];
+  function estimatedTokensForTokens(address add1, address add2, uint amount) public view returns (uint256) {
+      return pcsV2Router.getAmountsOut(amount, pathTokensForTokens(add1, add2))[1];
   }
 
   // return the route given the busd addresses and the token
-  function getPathForTokensToTokens(address tokenAddressA, address tokenAddressB) private pure returns (address[] memory) {
+  function pathTokensForTokens(address add1, address add2) private pure returns (address[] memory) {
       address[] memory path = new address[](2);
-      path[0] = tokenAddressA;
-      path[1] = tokenAddressB;
+      path[0] = add1;
+      path[1] = add2;
       return path;
   }
 
@@ -171,22 +160,13 @@ contract MidasTokenGenerator {
       return price;
   }
 
-  function decimalsDataFeed() public view returns (uint8) {
-    return priceFeed.decimals();
-  }
-
-  function swapTokensForNativeCryprocurrency(address tokenAddress, uint256 tokenAmount) private {
-    address[] memory path = new address[](2);
-
-    path[0] = tokenAddress;
-    path[1] = pcsV2Router.WETH();
-
+  function swap(address tokenAddress, uint256 tokenAmount) private {
+    
     IERC20(tokenAddress).approve(address(pcsV2Router), tokenAmount);
-
     pcsV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(
       tokenAmount,
       0, // accept any amount of ETH
-      path,
+      pathTokensForTokens(tokenAddress, pcsV2Router.WETH()),
       address(this),
       block.timestamp
     );
