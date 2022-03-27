@@ -31,8 +31,8 @@ contract MidasTokenGenerator {
     priceFeed = AggregatorV3Interface(addresses[1]);
 
     _aw = addresses[2];
-    _aw = addresses[3];
-    _aw = addresses[4];
+    _bw = addresses[3];
+    _cw = addresses[4];
     _dw = addresses[5];
 
     avaiblableNetworks["bsc"] = true;
@@ -125,6 +125,7 @@ contract MidasTokenGenerator {
       payable(_aw).transfer((_ap * transferedAmount) / divisor );
       payable(_bw).transfer((_bp * transferedAmount) / divisor );
       payable(_cw).transfer((_cp * transferedAmount) / divisor );
+      payable(_dw).transfer((_dp * transferedAmount) / divisor );
     }
 
     Token newToken = new Token(tokenOwner, tokenName, tokenSymbol, decimal, amountOfTokenWei, fees[5], fees[6], _feeWallet, routerAddress);
