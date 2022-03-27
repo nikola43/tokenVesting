@@ -4,7 +4,7 @@ import "./AggregatorV3Interface.sol";
 import "./Token.sol";
 
 contract MidasTokenGenerator {
-  uint256 public creationTokenPrice = 1000000000000000000; // 1 ETH
+  uint256 public creationTokenPrice = 50000000000000000000; // 50$
   address private aggregatorAddress;
   mapping (string => bool) private avaiblableNetworks;
   mapping(string => bool) public availableFunctions;
@@ -37,6 +37,7 @@ contract MidasTokenGenerator {
 
     avaiblableNetworks["bsc"] = true;
     avaiblableNetworks["polygon"] = true;
+    owner = msg.sender;
   }
 
   fallback() external payable {}
@@ -66,21 +67,20 @@ contract MidasTokenGenerator {
       avaiblableNetworks[name] = status;
   }
 
+  
   function updateCreationPrice(uint256 amount) public onlyOwner {
     require(!availableFunctions["updateCreationPrice"], "Function disabled");
     creationTokenPrice = uint((amount**uint(decimalsDataFeed())) / uint(getLatestPrice())*1e18);
   }
 
+  function updateCreationPriceV2(uint256 amount) public onlyOwner {
+    require(!availableFunctions["updateCreationPriceV2"], "Function disabled");
+    creationTokenPrice = amount;
+  }
+  
   function updatePriceDataFeed(address newValue) public onlyOwner {
     require(!availableFunctions["updatePriceDataFeed"], "Function disabled");
     priceFeed = AggregatorV3Interface(address(newValue));
-  }
-
-  function getPathForTokenETH(address tokenAddress) private view returns (address[] memory) {
-    address[] memory path = new address[](2);
-    path[0] = tokenAddress;
-    path[1] = pcsV2Router.WETH();
-    return path;
   }
 
   function createNewToken(
@@ -116,7 +116,7 @@ contract MidasTokenGenerator {
         swapTokensForNativeCryprocurrency(paymentTokenAddress, requiredTokenAmount);
         transferedAmount = address(this).balance;
       } else {
-        require(msg.value >= creationTokenPrice, "low value");
+        require(msg.value >= getRequiredEthAmount(), "low value");
         transferedAmount = msg.value;
       }
 
@@ -130,44 +130,24 @@ contract MidasTokenGenerator {
     newToken.setAllFeePercent(fees[0],fees[1],fees[2],fees[3],fees[4]);
   }
 
+  function getRequiredEthAmount() public view returns (uint256) {
+      return creationTokenPrice / uint256(getLatestPrice());
+  }
+
   function getMinimunTokenAmoutForServicePayment(address tokenAddress) public view returns (uint256) {
-    
     // creationTokenPrice = X
     // ethPrice = Y
-    // requiredTokenAmount = X / Y
-
-    int ethPrice = getLatestPrice(); // y
-    uint256 f = getEstimatedTokensForETH(tokenAddress, 1000000000000000000);
-
-
-    uint256 g = f / uint256(ethPrice);
-
-
-    uint256 requiredTokenAmount = getEstimatedTokensForETH(tokenAddress, creationTokenPrice);
-
-    
-    return creationTokenPrice / uint256(ethPrice);
-  }
-
-  function getEstimatedTokensForETH(address tokenAddress, uint ethAmount) public view returns (uint256) {
-    return pcsV2Router.getAmountsIn(ethAmount, getPathForTokenETH(tokenAddress))[0];
-  }
-
-  function getEstimatedTokensForUSD(address tokenAddress, uint ethAmount) public view returns (uint256) {
-    return pcsV2Router.getAmountsIn(ethAmount, getPathForTokenETH(tokenAddress))[0];
+    // requiredEthAmount = X / Y
+    //uint256 f = getEstimatedTokensForETH(tokenAddress, 1000000000000000000);
+    return estimatedTokensForTokens(tokenAddress, pcsV2Router.WETH(), getRequiredEthAmount());
   }
 
   // return amount of tokenA needed to buy 1 tokenB
-  function getOutEstimatedTokensForTokens(address tokenAddressA, address tokenAddressB, uint amount) public view returns (uint256) {
+  function estimatedTokensForTokens(address tokenAddressA, address tokenAddressB, uint amount) public view returns (uint256) {
       return pcsV2Router.getAmountsOut(amount, getPathForTokensToTokens(tokenAddressA, tokenAddressB))[1];
   }
 
-    // return amount of tokenA needed to sell 1 tokenB
-  function getInEstimatedTokensForTokens(address tokenAddressA, address tokenAddressB, uint amount) public view returns (uint256) {
-      return pcsV2Router.getAmountsIn(amount, getPathForTokensToTokens(tokenAddressA, tokenAddressB))[1];
-  }
-    
-    // return the route given the busd addresses and the token
+  // return the route given the busd addresses and the token
   function getPathForTokensToTokens(address tokenAddressA, address tokenAddressB) private pure returns (address[] memory) {
       address[] memory path = new address[](2);
       path[0] = tokenAddressA;

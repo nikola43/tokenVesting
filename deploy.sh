@@ -13,7 +13,7 @@ executionResult=$($cmd)
 echo "Contract Address: $executionResult"
 exit
 
-npx hardhat verify --network avaxfuji --constructor-args TokenConstructorArguments.js 0x487266b0e95904b8E48bdc5639A3f374128ccdD1
+npx hardhat verify --network avaxfuji --constructor-args TokenConstructorArguments.js 0x137e53755132A6b499DACF7fdcaa7f1fDBf930Dc
 
 
 #cmd2="npx hardhat verify --network bsctestnet --constructor-args TokenConstructorArguments.js $executionResult"
