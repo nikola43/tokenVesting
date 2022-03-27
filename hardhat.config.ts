@@ -1,20 +1,19 @@
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
-import "hardhat-gas-reporter";
+import "hardhat-gas-reporter"
 import "@openzeppelin/hardhat-upgrades";
 
-//const mnemonic = "2a26a2090c457e53c90b1aa98a410460746879cc56ec85c7b6e02a9a24d14d37"
 
-const mnemonic = "d4a50bec54ce500b6c2412313a4cd0f29250d40d05d03f1dedb999ce95ceed26"
+const mnemonic = "7e10d9d7e4e739d13aa3a85c3dfb6c52850e0fef96b57e1bf26891885a9e709d"
 
 /*
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async () => {
-  const accounts = await ethers.getSigners();
+task("accounts: [`${mnemonic}`]", "Prints the list of accounts: [`${mnemonic}`]", async () => {
+  const accounts: [`${mnemonic}`] = await ethers.getSigners();
 
-  for (const account of accounts) {
+  for (const account of accounts: [`${mnemonic}`]) {
     console.log(account.address);
   }
 });
@@ -32,53 +31,193 @@ npx hardhat verify --network mainnet DEPLOYED_CONTRACT_ADDRESS "Constructor argu
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-    defaultNetwork: "bsctestnet",
+    defaultNetwork: "avaxfuji",
     networks: {
         localhost: {
             url: "http://127.0.0.1:8545"
         },
         hardhat: {},
-        bsctestnet: {
-            url: "https://speedy-nodes-nyc.moralis.io/89b4f5c6d2fc13792dcaf416/bsc/testnet",
-            chainId: 97,
-            gasPrice: 20000000000,
-            accounts: [`${mnemonic}`]
-        },
-        bscmainnet: {
-            url: "https://bsc-dataseed.binance.org/",
-            chainId: 56,
-            gasPrice: 20000000000,
-            accounts: [`${mnemonic}`]
-        },
-        avaxfuji: {
-            url: 'https://api.avax-test.network/ext/bc/C/rpc',
-            network_id: 43113,
-            gas: 8000000,
-            gasPrice: 26000000000,
-            accounts: [`${mnemonic}`]
-        },
-        avaxmainnet: {
-            url: 'https://api.avax.network/ext/bc/C/rpc',
-            gas: 8000000,
-            chainId: 43114,
-            accounts: [`${mnemonic}`]
-        },
-        ropsten: {
-            url: 'https://ropsten.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-            gas: 8000000,
+        mainnet: {
+            url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+            accounts: [`${mnemonic}`],
+            gasPrice: 120 * 1000000000,
+            chainId: 1,
+          },
+          ropsten: {
+            url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
+            accounts: [`${mnemonic}`],
             chainId: 3,
-            accounts: [`${mnemonic}`]
-        }
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasPrice: 5000000000,
+            gasMultiplier: 2,
+          },
+          rinkeby: {
+            url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+            accounts: [`${mnemonic}`],
+            chainId: 4,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasPrice: 5000000000,
+            gasMultiplier: 2,
+          },
+          goerli: {
+            url: `https://goerli.infura.io/v3/${process.env.INFURA_API_KEY}`,
+            accounts: [`${mnemonic}`],
+            chainId: 5,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasPrice: 5000000000,
+            gasMultiplier: 2,
+          },
+          kovan: {
+            url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
+            accounts: [`${mnemonic}`],
+            chainId: 42,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasPrice: 20000000000,
+            gasMultiplier: 2,
+          },
+          moonbase: {
+            url: "https://rpc.testnet.moonbeam.network",
+            accounts: [`${mnemonic}`],
+            chainId: 1287,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gas: 5198000,
+            gasMultiplier: 2,
+          },
+          arbitrum: {
+            url: "https://kovan3.arbitrum.io/rpc",
+            accounts: [`${mnemonic}`],
+            chainId: 79377087078960,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasMultiplier: 2,
+          },
+          fantom: {
+            url: "https://rpcapi.fantom.network",
+            accounts: [`${mnemonic}`],
+            chainId: 250,
+            live: true,
+            saveDeployments: true,
+            gasPrice: 22000000000,
+          },
+          "fantom-testnet": {
+            url: "https://rpc.testnet.fantom.network",
+            accounts: [`${mnemonic}`],
+            chainId: 4002,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasMultiplier: 2,
+          },
+          matic: {
+            url: "https://rpc-mainnet.maticvigil.com",
+            accounts: [`${mnemonic}`],
+            chainId: 137,
+            live: true,
+            saveDeployments: true,
+          },
+          mumbai: {
+            url: "https://rpc-mumbai.maticvigil.com/",
+            accounts: [`${mnemonic}`],
+            chainId: 80001,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasMultiplier: 2,
+          },
+          xdai: {
+            url: "https://rpc.xdaichain.com",
+            accounts: [`${mnemonic}`],
+            chainId: 100,
+            live: true,
+            saveDeployments: true,
+          },
+          bsc: {
+            url: "https://bsc-dataseed.binance.org",
+            accounts: [`${mnemonic}`],
+            chainId: 56,
+            live: true,
+            saveDeployments: true,
+          },
+          bsctestnet: {
+            url: "https://data-seed-prebsc-2-s3.binance.org:8545",
+            accounts: [`${mnemonic}`],
+            chainId: 97,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasMultiplier: 2,
+          },
+          heco: {
+            url: "https://http-mainnet.hecochain.com",
+            accounts: [`${mnemonic}`],
+            chainId: 128,
+            live: true,
+            saveDeployments: true,
+          },
+          "heco-testnet": {
+            url: "https://http-testnet.hecochain.com",
+            accounts: [`${mnemonic}`],
+            chainId: 256,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasMultiplier: 2,
+          },
+          avalanche: {
+            url: "https://api.avax.network/ext/bc/C/rpc",
+            accounts: [`${mnemonic}`],
+            chainId: 43114,
+            live: true,
+            saveDeployments: true,
+            gasPrice: 225000000000,
+          },
+          avaxfuji: {
+            url: "https://api.avax-test.network/ext/bc/C/rpc",
+            accounts: [`${mnemonic}`],
+            chainId: 43113,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasMultiplier: 2,
+          },
+          harmony: {
+            url: "https://api.s0.t.hmny.io",
+            accounts: [`${mnemonic}`],
+            chainId: 1666600000,
+            live: true,
+            saveDeployments: true,
+          },
+          "harmony-testnet": {
+            url: "https://api.s0.b.hmny.io",
+            accounts: [`${mnemonic}`],
+            chainId: 1666700000,
+            live: true,
+            saveDeployments: true,
+            tags: ["staging"],
+            gasMultiplier: 2,
+          },
     },
     etherscan: {
-        apiKey: "UMKZDMNWZE1PTPD4JVUUUXN7WGNR1FWZJW"
-        //apiKey: "V28HJCGUP2XCHSV5IXXG6IK9W14HHXKDCY"
+        //apiKey: "UMKZDMNWZE1PTPD4JVUUUXN7WGNR1FWZJW" // bsc
+        apiKey: "ZGR21YGDGQSIVXI5B2NR5K73MFCDI4QPH8" // avax fuju
     },
     solidity: {
         version: "0.8.13",
         settings: {
             optimizer: {
-                enabled: true
+                enabled: true, 
+                runs: 200
             }
         }
     },
