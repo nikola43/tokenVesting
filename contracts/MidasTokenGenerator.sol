@@ -37,6 +37,7 @@ contract MidasTokenGenerator {
 
     avaiblableNetworks["bsc"] = true;
     avaiblableNetworks["polygon"] = true;
+    avaiblableNetworks["avalanche"] = true;
     owner = msg.sender;
   }
 
