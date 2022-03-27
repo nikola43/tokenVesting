@@ -61,11 +61,13 @@ contract MidasTokenGenerator {
       avaiblableNetworks[name] = status;
   }
 
+  /*
   function updateCreationPrice(uint256 amount) public onlyOwner {
     creationPrice = uint((amount**uint(priceFeed.decimals())) / uint(getLatestPrice())*1e18);
   }
+  */
 
-  function updateCreationPriceV2(uint256 amount) public onlyOwner {
+  function updateCreationPrice(uint256 amount) public onlyOwner {
     creationPrice = amount;
   }
   
